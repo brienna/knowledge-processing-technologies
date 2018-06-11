@@ -1,5 +1,10 @@
 import java.util.*;
 
+/*
+ * Represents an inverted index, which tackles the scalability 
+ * problem of an incidence matrix by focusing on only the occurrences
+ * of a term instead the absences as well. 
+ */
 public class InvertedIndex {
 	String[] myDocs;
 	
@@ -7,6 +12,10 @@ public class InvertedIndex {
 	ArrayList<ArrayList<Integer>> docLists;	
 	// Note: I would prefer to use a HashMap, but prof uses parallel ArrayLists
 	
+	/**
+	 * Constructs an inverted index for given documents. 
+	 * @param docs - the documents to be indexed
+	 */
 	public InvertedIndex(String[] docs) {
 		// Initialize attributes
 		myDocs = docs;
@@ -51,7 +60,9 @@ public class InvertedIndex {
  		}
 	}
 	
-	// Returns structure as a printable string
+	/**
+	 * Returns inverted index as a printable string.
+	 */
 	public String toString() {
 		String matrixString = new String();
 		ArrayList<Integer> docList;
@@ -70,7 +81,10 @@ public class InvertedIndex {
 		return matrixString;
 	}
 	
-	// Finds document list for given keyword
+	/**
+	 * Returns the document list for the given term.
+	 * @param query Keyword consisting of one term
+	 */
 	public ArrayList<Integer> search(String query) {
 		int index = termList.indexOf(query);
 		if (index < 0) {
@@ -80,7 +94,11 @@ public class InvertedIndex {
 		}
 	}
 	
-	// Generates document list for given keywords 
+	/**
+	 * Finds matching documents for given query (of any size)
+	 * @param query Keywords to search for
+	 * @return a list of documents that meet the query conditions
+	 */
 	public ArrayList<Integer> search(String[] query) {
 		// Get document list for first keyword
 		ArrayList<Integer> result = search(query[0]);
@@ -88,14 +106,20 @@ public class InvertedIndex {
 		while (termId < query.length) {
 			// Get document list for second keyword
 			ArrayList<Integer> result1 = search(query[termId]);
-			// Merge current list with intermediate/final list
+			// Merge current list with intermediate list
 			result = merge(result, result1);
 			termId++;
 		}
 		return result;
 	}
 	
-	// Intersects two document lists, keeping unique documents from each list
+	/**
+	 * Intersects two document lists, 
+	 * keeping unique documents that appear in both lists.
+	 * @param list1
+	 * @param list2
+	 * @return resulting list from the intersection
+	 */
 	private ArrayList<Integer> merge(ArrayList<Integer> list1, ArrayList<Integer> list2) {
 		ArrayList<Integer> mergedList = new ArrayList<Integer>();
 		// Initialize pointers

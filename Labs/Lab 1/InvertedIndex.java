@@ -1,7 +1,9 @@
 import java.util.*;
 
-/** 
- * Represents an inverted index object.
+/*
+ * Represents an inverted index, which tackles the scalability 
+ * problem of an incidence matrix by focusing on only the occurrences
+ * of a term instead the absences as well. 
  * @author Brienna
  */
 public class InvertedIndex {
