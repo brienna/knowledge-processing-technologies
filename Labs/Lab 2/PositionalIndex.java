@@ -91,11 +91,9 @@ public class PositionalIndex {
 	 * @param k distance of the two terms
 	 * @return merged list of docIds
 	 */
-	public ArrayList<DocId> intersect(String q1, String q2, int k) {
+	public ArrayList<DocId> intersect(ArrayList<DocId> list1, ArrayList<DocId> list2, int k) {
 		ArrayList<DocId> mergedList = new ArrayList<DocId>();
-		// Get each term's document list
-		ArrayList<DocId> list1 = docLists.get(termList.indexOf(q1));
-		ArrayList<DocId> list2 = docLists.get(termList.indexOf(q2));
+
 		// Initialize document list pointers
 		int id1 = 0, id2 = 0;
 		// Traverse both lists until one list runs out
@@ -130,6 +128,7 @@ public class PositionalIndex {
 							pid2++;
 						}
 					}
+
 					// If a match is found, we also quit the first position list
 					// Otherwise we move to the next position 
 					if (match) {
@@ -156,6 +155,32 @@ public class PositionalIndex {
 		return mergedList;
 	}
 	
+	public ArrayList<DocId> intersect2(String q1, String q2, int k) {
+		ArrayList<DocId> answer = new ArrayList<DocId>();
+		return answer;
+	}
+	
+	/**
+	 * Takes phrase query with multiple terms and
+	 * returns a list of DocID objects which each 
+	 * represent a single posting that the terms 
+	 * appear in.
+	 * @param query
+	 * @return
+	 */
+	public ArrayList<DocId> phraseQuery(String query) {
+		// Get documents that all query terms appear in
+		String[] terms = query.split(" ");
+		ArrayList<DocId> intermediate = docLists.get(termList.indexOf(terms[0]));
+		for (int i = 1; i < terms.length; i++) {
+			ArrayList<DocId> nextList = docLists.get(termList.indexOf(terms[i]));
+			intermediate = intersect(intermediate, nextList, i);
+			System.out.println("Intermediate: " + intermediate);
+		}
+		
+		return intermediate;
+	} 
+	
 	public static void main(String[] args) {
 		// Initialize example docs
 		String[] docs = {"new home sales top forecasts",
@@ -167,16 +192,12 @@ public class PositionalIndex {
 		// Build positional index using example docs
 		PositionalIndex pi = new PositionalIndex(docs);
 		System.out.println(pi);
-		
-		// Get documents that two given terms appear adjacent to each other
-		ArrayList<DocId> result = pi.intersect("new", "home", 1);
-		System.out.println(result);
-		
-		// Get documents that two given terms appear within 2 words of each other
-		System.out.println("\n'rise' and 'july' within 2 words: ");
-		ArrayList<DocId> result2 = pi.intersect("rise", "july", 2);
-		System.out.println(result2);
-		
+
 		// Get documents that three given terms appear adjacent to each other
+		System.out.println();
+		ArrayList<DocId> result = pi.phraseQuery("new home");
+		for (DocId resultDoc : result) {
+			System.out.println(docs[resultDoc.docId]);
+		}
 	}
 }
