@@ -4,6 +4,12 @@ import java.util.ArrayList;
  * Represents a positional index, a form of inverted index that
  * makes it easy to answer phrase queries where we are interested
  * in documents where the terms in the phrase appear together.
+ *
+ * Caveats: Does not consider direction of phrase query.
+ * Ex. "new home sales" and "sales home new" will return the same
+ * results. This is essentially what a positional index does however.
+ * It only looks at the relative positions of the terms,
+ * not the direction of the query. This is more useful.
  */
 public class PositionalIndex {
 	String[] myDocs;
@@ -82,9 +88,9 @@ public class PositionalIndex {
 	}
 
 	/**
-	 * Returns docIds of documents that two given terms 
-	 * appear within k words of each other, e.g. 
-	 * "in" and "july" within 1 word of each other would 
+	 * Returns docIds of documents that two given terms
+	 * appear within k words of each other, e.g.
+	 * "in" and "july" within 1 word of each other would
 	 * retrieve the document id for "home sales rise in july".
 	 * @param q1 One of the two terms
 	 * @param q2 One of the two terms
@@ -102,24 +108,24 @@ public class PositionalIndex {
 			if (list1.get(id1).docId == list2.get(id2).docId) {
 				// Create placeholder list for positions
 				ArrayList<Integer> placeholder = new ArrayList<Integer>();
-				
+
 				// Get each term's position list
 				ArrayList<Integer> pp1 = list1.get(id1).positionList;
 				ArrayList<Integer> pp2 = list2.get(id2).positionList;
 				// Initialize position list pointers
 				int pid1 = 0, pid2 = 0;
-				// Traverse first position list 
+				// Traverse first position list
 				while (pid1 < pp1.size()) {
 					boolean match = false;
-					// For each position in the first position list, 
+					// For each position in the first position list,
 					// traverse the second position list as well
 					while (pid2 < pp2.size()) {
 						// If the two terms appear together, we add this document
-						// Else if the second position moves past the first, quit the second position list 
+						// Else if the second position moves past the first, quit the second position list
 						// Otherwise we move to the next second position
 						if (Math.abs(pp1.get(pid1) - pp2.get(pid2)) <= k) {
 							match = true;
-							placeholder.add(pp2.get(pid2)); // Add position 
+							placeholder.add(pp2.get(pid2)); // Add position
 							// Having found this match, we quit the second position list
 							break;
 						} else if (pp2.get(pid2) > pp1.get(pid1)) {
@@ -130,9 +136,9 @@ public class PositionalIndex {
 					}
 
 					// If a match is found, we also quit the first position list
-					// Otherwise we move to the next position 
+					// Otherwise we move to the next position
 					if (match) {
-						// Add positions also 
+						// Add positions also
 						DocId doid = list1.get(id1);
 						for (Integer pos : placeholder) {
 							doid.insertPosition(pos);
@@ -154,19 +160,18 @@ public class PositionalIndex {
 		}
 		return mergedList;
 	}
-	
+
 	public ArrayList<DocId> intersect2(String q1, String q2, int k) {
 		ArrayList<DocId> answer = new ArrayList<DocId>();
 		return answer;
 	}
-	
+
 	/**
-	 * Takes phrase query with multiple terms and
-	 * returns a list of DocID objects which each 
-	 * represent a single posting that the terms 
-	 * appear in.
-	 * @param query
-	 * @return
+	 * Takes phrase query with multiple terms and returns a list
+	 * of DocID objects which each represent a single posting
+	 * that the terms appear in.
+	 * @param query String consisting of multiple terms
+	 * @return merged list of DocIds that each term appears in
 	 */
 	public ArrayList<DocId> phraseQuery(String query) {
 		// Get documents that all query terms appear in
@@ -175,28 +180,54 @@ public class PositionalIndex {
 		for (int i = 1; i < terms.length; i++) {
 			ArrayList<DocId> nextList = docLists.get(termList.indexOf(terms[i]));
 			intermediate = intersect(intermediate, nextList, i);
-			System.out.println("Intermediate: " + intermediate);
 		}
-		
+
 		return intermediate;
-	} 
-	
+	}
+
 	public static void main(String[] args) {
 		// Initialize example docs
 		String[] docs = {"new home sales top forecasts",
 						 "home sales rise in july",
 						 "increase in home sales in july",
-						 "july new home sales rise"
+						 "july new home sales rise",
+						 "july new home sales top forecasts"
 		};
-		
+
 		// Build positional index using example docs
 		PositionalIndex pi = new PositionalIndex(docs);
 		System.out.println(pi);
 
+		// Get documents that two given terms appear adjacent to each other
+		System.out.println("\nQuerying 'top forecasts'");
+		ArrayList<DocId> result2 = pi.phraseQuery("top forecasts");
+		for (DocId resultDoc : result2) {
+			System.out.println("Found document ID: " + resultDoc.docId);
+			System.out.println(docs[resultDoc.docId]);
+		}
+
 		// Get documents that three given terms appear adjacent to each other
-		System.out.println();
-		ArrayList<DocId> result = pi.phraseQuery("new home");
+		System.out.println("\nQuerying 'new home sales'");
+		ArrayList<DocId> result = pi.phraseQuery("sales home new");
 		for (DocId resultDoc : result) {
+			System.out.println("Found document ID: " + resultDoc.docId);
+			System.out.println(docs[resultDoc.docId]);
+
+		}
+
+		// Get documents that four given terms appear adjacent to each other
+		System.out.println("\nQuerying 'july new home sales'");
+		ArrayList<DocId> result3 = pi.phraseQuery("july new home sales");
+		for (DocId resultDoc : result3) {
+			System.out.println("Found document ID: " + resultDoc.docId);
+			System.out.println(docs[resultDoc.docId]);
+		}
+
+		// Get documents that five given terms appear adjacent to each other
+		System.out.println("\nQuerying 'july new home sales top'");
+		ArrayList<DocId> result4 = pi.phraseQuery("july new home sales top");
+		for (DocId resultDoc : result4) {
+			System.out.println("Found document ID: " + resultDoc.docId);
 			System.out.println(docs[resultDoc.docId]);
 		}
 	}
