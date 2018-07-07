@@ -1,9 +1,11 @@
 import java.util.*;
 
+
 /**
  * Binary search tree structure that stores the term dictionary.
  */
 public class BinaryTree {
+	
 	
 	/**
 	 * Insert a node to a subtree. Assumes that our key values are distinct,
@@ -35,6 +37,7 @@ public class BinaryTree {
 		}
 	}
 	
+	
 	/**
 	 * Searches a term in a subtree.
 	 * @param n root node of a subtree
@@ -62,5 +65,43 @@ public class BinaryTree {
 	}
 	
 	
+	/**
+	 * Does a wildcard search in a subtree.
+	 * @param n the root node of a subtree
+	 * @param wildcard a wild card term, e.g., ho (terms like home will be returned)
+	 * @param matches accumulating list of tree nodes that match the wild card
+	 * @return tree nodes that match the wild card 
+	 */
+	public ArrayList<Node> wildCardSearch(Node n, String wildcard, ArrayList<Node> matches) {
+		// If current node is null, it means that we exhausted the tree
+		// without finding any match for the wildcard
+		if (n == null) {
+			return matches;
+		}
+		
+		// If the current node starts with the key, add it as a match
+		if (n.term.startsWith(wildcard)) {
+			matches.add(n);
+		}
+		
+		// Compare same segment length of current node with wildcard
+		if (n.term.substring(0, wildcard.length()).compareTo(wildcard) > 0) {
+			return wildCardSearch(n.left, wildcard, matches);
+		} else {
+			return wildCardSearch(n.right, wildcard, matches);
+		}
+	}
 	
+	
+	/**
+	 * Prints the inverted index based on the increasing order of the terms in a subtree.
+	 * @param node the root node of the subtree
+	 */
+	public void printInOrder(Node node) {
+		if (node != null) {
+			printInOrder(node.left);
+			System.out.println("Traversed " + node.term);
+			printInOrder(node.right);
+		}
+	}
 }
